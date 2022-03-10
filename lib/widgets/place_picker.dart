@@ -26,9 +26,18 @@ class PlacePicker extends StatefulWidget {
   /// map does not pan to the user's current location.
   final LatLng? displayLocation;
   final LocalizationItem localizationItem;
+  final MapType mapType;
+  final bool showNearbyPlaces;
+  final BitmapDescriptor markerIcon;
 
-  const PlacePicker(this.apiKey,
-      {this.displayLocation, this.localizationItem = const LocalizationItem()});
+  const PlacePicker(
+    this.apiKey, {
+    this.displayLocation,
+    this.localizationItem = const LocalizationItem(),
+    this.mapType = MapType.normal,
+    this.showNearbyPlaces = true,
+    this.markerIcon = BitmapDescriptor.defaultMarker,
+  });
 
   @override
   State<StatefulWidget> createState() => PlacePickerState();
@@ -77,6 +86,7 @@ class PlacePickerState extends State<PlacePicker> {
   void initState() {
     super.initState();
     markers.add(Marker(
+      icon: widget.markerIcon,
       position: widget.displayLocation ?? LatLng(5.6037, 0.1870),
       markerId: MarkerId("selected-location"),
     ));
@@ -105,6 +115,7 @@ class PlacePickerState extends State<PlacePicker> {
         children: <Widget>[
           Expanded(
             child: GoogleMap(
+              mapType: widget.mapType,
               initialCameraPosition: CameraPosition(
                 target: widget.displayLocation ?? LatLng(5.6037, 0.1870),
                 zoom: 15,
@@ -130,19 +141,22 @@ class PlacePickerState extends State<PlacePicker> {
                     widget.localizationItem.tapToSelectLocation,
                   ),
                   Divider(height: 8),
-                  Padding(
-                    child: Text(widget.localizationItem.nearBy,
-                        style: TextStyle(fontSize: 16)),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: nearbyPlaces
-                          .map((it) => NearbyPlaceItem(
-                              it, () => moveToLocation(it.latLng!)))
-                          .toList(),
+                  if (widget.showNearbyPlaces)
+                    Padding(
+                      child: Text(widget.localizationItem.nearBy,
+                          style: TextStyle(fontSize: 16)),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     ),
-                  ),
+                  if (widget.showNearbyPlaces)
+                    Expanded(
+                      child: ListView(
+                        children: nearbyPlaces
+                            .map((it) => NearbyPlaceItem(
+                                it, () => moveToLocation(it.latLng!)))
+                            .toList(),
+                      ),
+                    ),
                 ],
               ),
             ),
