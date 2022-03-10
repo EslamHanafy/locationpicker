@@ -95,6 +95,7 @@ class PlacePickerState extends State<PlacePicker> {
         key: this.appBarKey,
         title: SearchInput(searchPlace),
         centerTitle: true,
+        leading: null,
         automaticallyImplyLeading: false,
       ),
       body: Column(
@@ -416,6 +417,16 @@ class PlacePickerState extends State<PlacePicker> {
       final responseJson = jsonDecode(response.body);
 
       if (responseJson['results'] == null) {
+        throw Error();
+      }
+
+      if (responseJson['error_message'] != null) {
+        print(responseJson['error_message']);
+        throw Error();
+      }
+
+      if ((responseJson['results'] as List).isEmpty) {
+        print('No result');
         throw Error();
       }
 
