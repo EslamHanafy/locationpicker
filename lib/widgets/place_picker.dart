@@ -25,13 +25,10 @@ class PlacePicker extends StatefulWidget {
   /// Location to be displayed when screen is showed. If this is set or not null, the
   /// map does not pan to the user's current location.
   final LatLng? displayLocation;
-  LocalizationItem? localizationItem;
+  final LocalizationItem? localizationItem;
 
-  PlacePicker(this.apiKey, {this.displayLocation, this.localizationItem}) {
-    if (this.localizationItem == null) {
-      this.localizationItem = new LocalizationItem();
-    }
-  }
+  const PlacePicker(this.apiKey,
+      {this.displayLocation, this.localizationItem = const LocalizationItem()});
 
   @override
   State<StatefulWidget> createState() => PlacePickerState();
@@ -169,10 +166,6 @@ class PlacePickerState extends State<PlacePicker> {
     }
 
     previousSearchTerm = place;
-
-    if (context == null) {
-      return;
-    }
 
     clearOverlay();
 
