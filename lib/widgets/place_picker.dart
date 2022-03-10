@@ -67,6 +67,8 @@ class PlacePickerState extends State<PlacePicker> {
 
   String previousSearchTerm = '';
 
+  LatLng? _centerLatLng;
+
   // constructor
   PlacePickerState();
 
@@ -85,6 +87,7 @@ class PlacePickerState extends State<PlacePicker> {
   @override
   void initState() {
     super.initState();
+    _centerLatLng = widget.displayLocation;
     markers.add(Marker(
       icon: widget.markerIcon,
       position: widget.displayLocation ?? LatLng(5.6037, 0.1870),
@@ -127,8 +130,13 @@ class PlacePickerState extends State<PlacePicker> {
                   moveToLocation(latLng);
                 },
                 onCameraMove: (cameraPosition) {
-                  clearOverlay();
-                  moveToLocation(cameraPosition.target);
+                  _centerLatLng = cameraPosition.target;
+                },
+                onCameraIdle: () {
+                  if (_centerLatLng != null) {
+                    clearOverlay();
+                    moveToLocation(_centerLatLng!);
+                  }
                 },
                 markers: markers,
               ),
