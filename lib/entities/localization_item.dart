@@ -5,6 +5,7 @@ class LocalizationItem {
   final String noResultsFound;
   final String unnamedLocation;
   final String tapToSelectLocation;
+  final String searchHint;
 
   const LocalizationItem({
     this.languageCode = 'en_us',
@@ -13,5 +14,6 @@ class LocalizationItem {
     this.noResultsFound = 'No results found',
     this.unnamedLocation = 'Unnamed location',
     this.tapToSelectLocation = 'Tap to select this location',
+    this.searchHint = 'Search place',
   });
 }
