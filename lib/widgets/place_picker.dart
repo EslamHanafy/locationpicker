@@ -144,7 +144,8 @@ class PlacePickerState extends State<PlacePicker> {
                 },
                 onCameraIdle: () {
                   if (_currentLatLng != null) {
-                    moveToLocation(_currentLatLng!, animated: false);
+                    reverseGeocodeLatLng(_currentLatLng!);
+                    getNearbyPlaces(_currentLatLng!);
                   }
                 },
                 markers: markers,
@@ -655,6 +656,7 @@ class PlacePickerState extends State<PlacePicker> {
 
     Location().getLocation().then((locationData) {
       LatLng target = LatLng(locationData.latitude!, locationData.longitude!);
+      _currentLatLng = target;
       moveToLocation(target);
     }).catchError((error) {
       // TODO: Handle the exception here
