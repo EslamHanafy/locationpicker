@@ -67,7 +67,6 @@ class PlacePickerState extends State<PlacePicker> {
 
   String previousSearchTerm = '';
 
-  double? _currentZoom;
   LatLng? _currentLatLng;
 
   // constructor
@@ -76,8 +75,6 @@ class PlacePickerState extends State<PlacePicker> {
   void onMapCreated(GoogleMapController controller) {
     this.mapController.complete(controller);
     moveToCurrentUserLocation();
-
-    controller.getZoomLevel().then((value) => _currentZoom = value);
   }
 
   @override
@@ -128,24 +125,20 @@ class PlacePickerState extends State<PlacePicker> {
                 myLocationButtonEnabled: true,
                 myLocationEnabled: true,
                 onMapCreated: onMapCreated,
-                onTap: (latLng) {
+                onTap: (latLng) async {
                   clearOverlay();
-                  moveToLocation(latLng);
+                  await moveToLocation(latLng);
                 },
-                onCameraMove: (cameraPosition) {
-                  _currentZoom = cameraPosition.zoom;
+                onCameraMove: (cameraPosition) async {
                   _currentLatLng = cameraPosition.target;
-                  moveToLocation(
-                    cameraPosition.target,
-                    animated: false,
-                    reverseGeocode: false,
-                    updateNearbyPlaces: false,
-                  );
+                  setMarker(cameraPosition.target);
                 },
                 onCameraIdle: () {
                   if (_currentLatLng != null) {
-                    reverseGeocodeLatLng(_currentLatLng!);
-                    getNearbyPlaces(_currentLatLng!);
+                    moveToLocation(
+                      _currentLatLng!,
+                      animated: false,
+                    );
                   }
                 },
                 markers: markers,
@@ -175,8 +168,12 @@ class PlacePickerState extends State<PlacePicker> {
                     Expanded(
                       child: ListView(
                         children: nearbyPlaces
-                            .map((it) => NearbyPlaceItem(
-                                it, () => moveToLocation(it.latLng!)))
+                            .map(
+                              (it) => NearbyPlaceItem(
+                                it,
+                                () async => await moveToLocation(it.latLng!),
+                              ),
+                            )
                             .toList(),
                       ),
                     ),
@@ -348,7 +345,7 @@ class PlacePickerState extends State<PlacePicker> {
       }
 
       final location = responseJson['result']['geometry']['location'];
-      moveToLocation(LatLng(location['lat'], location['lng']));
+      await moveToLocation(LatLng(location['lat'], location['lng']));
     } catch (e) {
       print(e);
     }
@@ -587,65 +584,28 @@ class PlacePickerState extends State<PlacePicker> {
 
   /// Moves the camera to the provided location and updates other UI features to
   /// match the location.
-  void moveToLocation(
-    LatLng latLng, {
-    bool animated = true,
-    bool reverseGeocode = true,
-    bool updateNearbyPlaces = true,
-  }) {
-    if (_currentZoom != null) {
-      this.mapController.future.then((controller) {
-        if (animated) {
-          controller.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: latLng,
-                zoom: _currentZoom!,
-              ),
-            ),
-          );
-        } else {
-          controller.moveCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(
-                target: latLng,
-                zoom: _currentZoom!,
-              ),
-            ),
-          );
-        }
-      });
+  Future<void> moveToLocation(LatLng latLng, {bool animated = true}) async {
+    final controller = await this.mapController.future;
+    final currentZoomLevel = await controller.getZoomLevel();
+
+    final cameraUpdate = CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: latLng,
+        zoom: currentZoomLevel,
+      ),
+    );
+
+    if (animated) {
+      controller.animateCamera(cameraUpdate);
     } else {
-      this.mapController.future.then((controller) {
-        controller.getZoomLevel().then((currentZoomLevel) {
-          if (animated) {
-            controller.animateCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(
-                  target: latLng,
-                  zoom: currentZoomLevel,
-                ),
-              ),
-            );
-          } else {
-            controller.moveCamera(
-              CameraUpdate.newCameraPosition(
-                CameraPosition(
-                  target: latLng,
-                  zoom: currentZoomLevel,
-                ),
-              ),
-            );
-          }
-        });
-      });
+      controller.moveCamera(cameraUpdate);
     }
 
     setMarker(latLng);
 
-    if (reverseGeocode) reverseGeocodeLatLng(latLng);
+    reverseGeocodeLatLng(latLng);
 
-    if (updateNearbyPlaces) getNearbyPlaces(latLng);
+    getNearbyPlaces(latLng);
   }
 
   void moveToCurrentUserLocation() {
@@ -656,7 +616,6 @@ class PlacePickerState extends State<PlacePicker> {
 
     Location().getLocation().then((locationData) {
       LatLng target = LatLng(locationData.latitude!, locationData.longitude!);
-      _currentLatLng = target;
       moveToLocation(target);
     }).catchError((error) {
       // TODO: Handle the exception here
