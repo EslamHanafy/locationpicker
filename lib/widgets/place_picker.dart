@@ -108,56 +108,61 @@ class PlacePickerState extends State<PlacePicker> {
           searchHint: widget.localizationItem.searchHint,
         ),
         centerTitle: true,
-        leading: null,
-        automaticallyImplyLeading: false,
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: GoogleMap(
-              mapType: widget.mapType,
-              initialCameraPosition: CameraPosition(
-                target: widget.displayLocation ?? LatLng(5.6037, 0.1870),
-                zoom: 15,
-              ),
-              myLocationButtonEnabled: true,
-              myLocationEnabled: true,
-              onMapCreated: onMapCreated,
-              onTap: (latLng) {
-                clearOverlay();
-                moveToLocation(latLng);
-              },
-              markers: markers,
-            ),
-          ),
-          SelectPlaceAction(
-            getLocationName(),
-            () => Navigator.of(context).pop(this.locationResult),
-            widget.localizationItem.tapToSelectLocation,
-          ),
-          if (widget.showNearbyPlaces && !this.hasSearchTerm)
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Divider(height: 8),
-                  Padding(
-                    child: Text(widget.localizationItem.nearBy,
-                        style: TextStyle(fontSize: 16)),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: nearbyPlaces
-                          .map((it) => NearbyPlaceItem(
-                              it, () => moveToLocation(it.latLng!)))
-                          .toList(),
-                    ),
-                  ),
-                ],
+              child: GoogleMap(
+                mapType: widget.mapType,
+                initialCameraPosition: CameraPosition(
+                  target: widget.displayLocation ?? LatLng(5.6037, 0.1870),
+                  zoom: 25,
+                ),
+                myLocationButtonEnabled: true,
+                myLocationEnabled: true,
+                onMapCreated: onMapCreated,
+                onTap: (latLng) {
+                  clearOverlay();
+                  moveToLocation(latLng);
+                },
+                markers: markers,
               ),
             ),
-        ],
+            SelectPlaceAction(
+              getLocationName(),
+              () => Navigator.of(context).pop(this.locationResult),
+              widget.localizationItem.tapToSelectLocation,
+            ),
+            if (widget.showNearbyPlaces && !this.hasSearchTerm)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Divider(height: 8),
+                    Padding(
+                      child: Text(
+                        widget.localizationItem.nearBy,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView(
+                        children: nearbyPlaces
+                            .map((it) => NearbyPlaceItem(
+                                it, () => moveToLocation(it.latLng!)))
+                            .toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -206,17 +211,24 @@ class PlacePickerState extends State<PlacePicker> {
         child: Material(
           elevation: 1,
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            padding: EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 24,
+            ),
             child: Row(
               children: <Widget>[
                 SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(strokeWidth: 3)),
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(strokeWidth: 3),
+                ),
                 SizedBox(width: 24),
                 Expanded(
-                    child: Text(widget.localizationItem.findingPlace,
-                        style: TextStyle(fontSize: 16)))
+                  child: Text(
+                    widget.localizationItem.findingPlace,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
               ],
             ),
           ),
@@ -533,10 +545,16 @@ class PlacePickerState extends State<PlacePicker> {
   /// match the location.
   void moveToLocation(LatLng latLng) {
     this.mapController.future.then((controller) {
-      controller.animateCamera(
-        CameraUpdate.newCameraPosition(
-            CameraPosition(target: latLng, zoom: 15.0)),
-      );
+      controller.getZoomLevel().then((currentZoomLevel) {
+        controller.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: latLng,
+              zoom: currentZoomLevel,
+            ),
+          ),
+        );
+      });
     });
 
     setMarker(latLng);
