@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:place_picker/entities/entities.dart';
 import 'package:place_picker/entities/localization_item.dart';
@@ -67,7 +68,7 @@ class PlacePickerState extends State<PlacePicker> {
 
   String previousSearchTerm = '';
 
-  LatLng? _currentLatLng;
+  // LatLng? _currentLatLng;
 
   // constructor
   PlacePickerState();
@@ -87,12 +88,12 @@ class PlacePickerState extends State<PlacePicker> {
   @override
   void initState() {
     super.initState();
-    _currentLatLng = widget.displayLocation;
-    markers.add(Marker(
-      icon: widget.markerIcon,
-      position: widget.displayLocation ?? LatLng(5.6037, 0.1870),
-      markerId: MarkerId("selected-location"),
-    ));
+    // _currentLatLng = widget.displayLocation;
+    // markers.add(Marker(
+    //   icon: widget.markerIcon,
+    //   position: widget.displayLocation ?? LatLng(30.01821, 31.41133),
+    //   markerId: MarkerId("selected-location"),
+    // ));
   }
 
   @override
@@ -119,8 +120,8 @@ class PlacePickerState extends State<PlacePicker> {
               child: GoogleMap(
                 mapType: widget.mapType,
                 initialCameraPosition: CameraPosition(
-                  target: widget.displayLocation ?? LatLng(5.6037, 0.1870),
-                  zoom: 25,
+                  target: widget.displayLocation ?? LatLng(30.01821, 31.41133),
+                  zoom: 16,
                 ),
                 myLocationButtonEnabled: true,
                 myLocationEnabled: true,
@@ -129,18 +130,18 @@ class PlacePickerState extends State<PlacePicker> {
                   clearOverlay();
                   await moveToLocation(latLng);
                 },
-                onCameraMove: (cameraPosition) async {
-                  _currentLatLng = cameraPosition.target;
-                  setMarker(cameraPosition.target);
-                },
-                onCameraIdle: () {
-                  if (_currentLatLng != null) {
-                    moveToLocation(
-                      _currentLatLng!,
-                      animated: false,
-                    );
-                  }
-                },
+                // onCameraMove: (cameraPosition) async {
+                //   _currentLatLng = cameraPosition.target;
+                //   setMarker(cameraPosition.target);
+                // },
+                // onCameraIdle: () {
+                //   if (_currentLatLng != null) {
+                //     moveToLocation(
+                //       _currentLatLng!,
+                //       animated: false,
+                //     );
+                //   }
+                // },
                 markers: markers,
               ),
             ),
@@ -158,7 +159,7 @@ class PlacePickerState extends State<PlacePicker> {
                     Padding(
                       child: Text(
                         widget.localizationItem.nearBy,
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 24,
@@ -608,18 +609,78 @@ class PlacePickerState extends State<PlacePicker> {
     getNearbyPlaces(latLng);
   }
 
-  void moveToCurrentUserLocation() {
-    if (widget.displayLocation != null) {
-      moveToLocation(widget.displayLocation!);
-      return;
+  void moveToCurrentUserLocation() async {
+    try {
+      if (widget.displayLocation != null) {
+        moveToLocation(widget.displayLocation!);
+        return;
+      }
+
+      final locationData = await getCurrentLocation();
+      if (locationData == null) {
+        print("Couldn't get the current location");
+        return;
+      }
+
+      LatLng target = LatLng(locationData.latitude, locationData.longitude);
+      moveToLocation(target);
+    } catch (e) {
+      print("Eslam got an error: $e");
+    }
+  }
+
+  Future<Position?> getCurrentLocation() async {
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      /// if user is not enabling the location service
+      // await Geolocator.openLocationSettings();
+      print("location_not_enabled");
+      return null;
     }
 
-    Location().getLocation().then((locationData) {
-      LatLng target = LatLng(locationData.latitude!, locationData.longitude!);
-      moveToLocation(target);
-    }).catchError((error) {
-      // TODO: Handle the exception here
-      print(error);
-    });
+    /// get the current permission for location service
+    final LocationPermission permission = await Geolocator.checkPermission();
+    LocationPermission newPermission = LocationPermission.denied;
+
+    if (permission == LocationPermission.denied && Platform.isAndroid) {
+      newPermission = await Geolocator.requestPermission();
+
+      if (newPermission == LocationPermission.deniedForever) {
+        print("location_not_enabled_settings");
+        return null;
+      }
+    }
+
+    /// catch second dialog dismissed
+    if (permission == LocationPermission.denied &&
+        newPermission == LocationPermission.denied &&
+        Platform.isAndroid) {
+      print("location_not_enabled");
+      return null;
+    }
+
+    if (permission == LocationPermission.denied && Platform.isIOS) {
+      /// when first time using the app or allow once
+      /// prompt user to select
+      newPermission = await Geolocator.requestPermission();
+
+      if (newPermission == LocationPermission.deniedForever) {
+        print("location_not_enabled_settings");
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever && Platform.isIOS) {
+      /// happen in ios only when user click on deny
+      /// allow user to go to setting and enable back
+      // await Geolocator.openLocationSettings();
+      print("location_not_enabled_settings");
+      return null;
+    }
+
+    final Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return position;
   }
 }

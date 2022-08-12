@@ -50,7 +50,7 @@ class SearchInputState extends State<SearchInput> {
       this.debouncer!.cancel();
     }
 
-    this.debouncer = Timer(Duration(milliseconds: 500), () {
+    this.debouncer = Timer(Duration(milliseconds: 1500), () {
       widget.onSearchInput(this.editController.text);
     });
   }
@@ -59,14 +59,18 @@ class SearchInputState extends State<SearchInput> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8),
+      height: 40,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           Icon(Icons.search,
               color: Theme.of(context).textTheme.bodyText1!.color),
           SizedBox(width: 8),
           Expanded(
             child: TextField(
+              textAlignVertical: TextAlignVertical.top,
               decoration: InputDecoration(
+                contentPadding: EdgeInsets.only(bottom: 8),
                 hintText: widget.searchHint,
                 border: InputBorder.none,
               ),
