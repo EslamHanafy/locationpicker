@@ -310,7 +310,13 @@ class PlacePickerState extends State<PlacePicker> {
         aci.offset = 0;
         aci.length = 0;
 
-        suggestions.add(RichSuggestion(aci, () {}));
+        suggestions.add(
+          RichSuggestion(
+            aci,
+            () {},
+            widget.searchResultStyle,
+          ),
+        );
       } else {
         for (dynamic t in predictions) {
           final aci = AutoCompleteItem()
@@ -319,10 +325,16 @@ class PlacePickerState extends State<PlacePicker> {
             ..offset = t['matched_substrings'][0]['offset']
             ..length = t['matched_substrings'][0]['length'];
 
-          suggestions.add(RichSuggestion(aci, () {
-            FocusScope.of(context).requestFocus(FocusNode());
-            decodeAndSelectPlace(aci.id);
-          }));
+          suggestions.add(
+            RichSuggestion(
+              aci,
+              () {
+                FocusScope.of(context).requestFocus(FocusNode());
+                decodeAndSelectPlace(aci.id);
+              },
+              widget.searchResultStyle,
+            ),
+          );
         }
       }
 

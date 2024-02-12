@@ -4,8 +4,9 @@ import 'package:place_picker/entities/entities.dart';
 class RichSuggestion extends StatelessWidget {
   final VoidCallback onTap;
   final AutoCompleteItem autoCompleteItem;
+  final TextStyle? style;
 
-  RichSuggestion(this.autoCompleteItem, this.onTap);
+  RichSuggestion(this.autoCompleteItem, this.onTap, this.style);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class RichSuggestion extends StatelessWidget {
 
   List<TextSpan> getStyledTexts(BuildContext context) {
     final List<TextSpan> result = [];
-    final style = TextStyle(color: Colors.grey, fontSize: 15);
+    final style = this.style ?? TextStyle(color: Colors.grey, fontSize: 15);
 
     final startText = autoCompleteItem.text!.substring(
       0,
@@ -39,9 +40,10 @@ class RichSuggestion extends StatelessWidget {
     result.add(
       TextSpan(
         text: boldText,
-        style: style.copyWith(
-          color: Theme.of(context).textTheme.bodyText1!.color,
-        ),
+        style: style,
+        // style: style.copyWith(
+        //   color: Theme.of(context).textTheme.bodyText1!.color,
+        // ),
       ),
     );
 
