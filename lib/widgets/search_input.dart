@@ -6,10 +6,14 @@ import 'package:flutter/material.dart';
 class SearchInput extends StatefulWidget {
   final ValueChanged<String> onSearchInput;
   final String searchHint;
+  final TextStyle? hintStyle;
+  final TextStyle? textStyle;
 
   SearchInput({
     required this.onSearchInput,
     required this.searchHint,
+    this.hintStyle,
+    this.textStyle,
   });
 
   @override
@@ -72,8 +76,10 @@ class SearchInputState extends State<SearchInput> {
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(bottom: 8),
                 hintText: widget.searchHint,
+                hintStyle: widget.hintStyle,
                 border: InputBorder.none,
               ),
+              style: widget.textStyle,
               controller: this.editController,
               onChanged: (value) {
                 setState(() {

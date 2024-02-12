@@ -30,6 +30,11 @@ class PlacePicker extends StatefulWidget {
   final bool showNearbyPlaces;
   final BitmapDescriptor markerIcon;
 
+  final TextStyle? searchHintStyle;
+  final TextStyle? searchTextStyle;
+  final TextStyle? searchResultStyle;
+  final TextStyle? nearbyPlaceTextStyle;
+
   const PlacePicker(
     this.apiKey, {
     this.displayLocation,
@@ -37,6 +42,10 @@ class PlacePicker extends StatefulWidget {
     this.mapType = MapType.normal,
     this.showNearbyPlaces = true,
     this.markerIcon = BitmapDescriptor.defaultMarker,
+    this.searchHintStyle,
+    this.searchTextStyle,
+    this.searchResultStyle,
+    this.nearbyPlaceTextStyle,
   });
 
   @override
@@ -109,6 +118,8 @@ class PlacePickerState extends State<PlacePicker> {
         title: SearchInput(
           onSearchInput: searchPlace,
           searchHint: widget.localizationItem.searchHint,
+          hintStyle: widget.searchHintStyle,
+          textStyle: widget.searchTextStyle,
         ),
         centerTitle: true,
       ),
@@ -172,6 +183,7 @@ class PlacePickerState extends State<PlacePicker> {
                               (it) => NearbyPlaceItem(
                                 it,
                                 () async => await moveToLocation(it.latLng!),
+                                widget.nearbyPlaceTextStyle,
                               ),
                             )
                             .toList(),
@@ -245,7 +257,7 @@ class PlacePickerState extends State<PlacePicker> {
                 Expanded(
                   child: Text(
                     widget.localizationItem.findingPlace,
-                    style: TextStyle(fontSize: 16),
+                    style: widget.searchResultStyle ?? TextStyle(fontSize: 16),
                   ),
                 ),
               ],

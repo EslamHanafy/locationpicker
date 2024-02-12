@@ -4,8 +4,9 @@ import 'package:place_picker/entities/entities.dart';
 class NearbyPlaceItem extends StatelessWidget {
   final NearbyPlace nearbyPlace;
   final VoidCallback onTap;
+  final TextStyle? textStyle;
 
-  NearbyPlaceItem(this.nearbyPlace, this.onTap);
+  NearbyPlaceItem(this.nearbyPlace, this.onTap, this.textStyle);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,13 @@ class NearbyPlaceItem extends StatelessWidget {
             children: <Widget>[
               Image.network(nearbyPlace.icon!, width: 16),
               SizedBox(width: 24),
-              Expanded(child: Text("${nearbyPlace.name}", style: TextStyle(fontSize: 16, color: Colors.black)))
+              Expanded(
+                child: Text(
+                  "${nearbyPlace.name}",
+                  style:
+                      textStyle ?? TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              )
             ],
           ),
         ),
