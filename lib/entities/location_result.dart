@@ -48,4 +48,25 @@ class LocationResult {
       "postalCode": postalCode?.toMap,
     };
   }
+
+  LocationResult();
+
+  LocationResult.fromMap(Map<String, dynamic> map) {
+    placeId = map["placeId"];
+    name = map["name"];
+    latLng = LatLng(map["latitude"] ?? 0, map["longitude"] ?? 0);
+    formattedAddress = map["formattedAddress"];
+
+    country = AddressComponent.fromMap(map["country"] ?? {});
+    city = AddressComponent.fromMap(map["city"] ?? {});
+    administrativeAreaLevel1 =
+        AddressComponent.fromMap(map["administrativeAreaLevel1"] ?? {});
+    administrativeAreaLevel2 =
+        AddressComponent.fromMap(map["administrativeAreaLevel2"] ?? {});
+    subLocalityLevel1 =
+        AddressComponent.fromMap(map["subLocalityLevel1"] ?? {});
+    subLocalityLevel2 =
+        AddressComponent.fromMap(map["subLocalityLevel2"] ?? {});
+    postalCode = AddressComponent.fromMap(map["postalCode"] ?? {});
+  }
 }

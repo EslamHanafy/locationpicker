@@ -11,6 +11,11 @@ class AddressComponent {
 
   AddressComponent({this.name, this.shortName});
 
+  AddressComponent.fromMap(Map<String, dynamic> map) {
+    name = map["name"];
+    shortName = map["shortName"];
+  }
+
   static AddressComponent fromJson(dynamic json) {
     return AddressComponent(name: json['long_name'], shortName: json['short_name']);
   }
