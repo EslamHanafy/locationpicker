@@ -31,4 +31,21 @@ class LocationResult {
   String? placeId;
 
   String? get locality => city?.name;
+
+  Map<String, dynamic> get toMap {
+    return {
+      "placeId": placeId,
+      "name": name,
+      "latitude": latLng?.latitude,
+      "longitude": latLng?.longitude,
+      "formattedAddress": formattedAddress,
+      "country": country?.toMap,
+      "city": city?.toMap,
+      "administrativeAreaLevel1": administrativeAreaLevel1?.toMap,
+      "administrativeAreaLevel2": administrativeAreaLevel2?.toMap,
+      "subLocalityLevel1": subLocalityLevel1?.toMap,
+      "subLocalityLevel2": subLocalityLevel2?.toMap,
+      "postalCode": postalCode?.toMap,
+    };
+  }
 }
